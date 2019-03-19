@@ -38,8 +38,13 @@ class HighResolutionRecorder():
         self.save_low_resolution = False,
         self._trafficlight_period = trafficlight
 
+        # We get the source and destiny folders:
         self.source = os.getenv('SOURCE_FOLDER_PATH')
         self.destiny = os.getenv('DESTINY_HIGH_RESOLUTION_PATH')
+
+        # We verify the destiny folder is empty:
+        os.system('sudo rm -rf ' + self.destiny)
+        os.system('mkdir ' + self.destiny)
 
         # We create the camera interface in simulation and normal mode
         if self._simulation:
