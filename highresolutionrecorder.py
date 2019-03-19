@@ -52,7 +52,7 @@ class HighResolutionRecorder():
             print('Started in Simulation mode')
         else:
             import picamera 
-            from .tools.picameraArray import PiRGBAArray
+            from tools.picameraArray import PiRGBAArray
             self.camera = picamera.PiCamera(resolution = (self._width,self._height),
                                             framerate  = 2)
             print('Started in PiCamera Mode')
