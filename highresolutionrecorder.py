@@ -23,6 +23,7 @@ class HighResolutionRecorder():
     def __init__(   self,
                     width = 2560,
                     height = 1920,
+                    ratio = 8,
                     simulation = False,
                     apply_roi = False,
                     apply_background = False,
@@ -33,6 +34,7 @@ class HighResolutionRecorder():
         # Setting the parameters as object variables:
         self._width  = width
         self._height = height
+        self.ratio = ratio
         self._simulation = simulation 
         self.apply_roi = False,
         self.apply_background = False,
@@ -40,6 +42,10 @@ class HighResolutionRecorder():
         self._trafficlight_period = trafficlight
         self._current_time = time()
         self.my_periods = []
+
+        # Canvas for the image:
+        self.high_resolution_image = np.zeros((self._width,self._height,4))
+        self.low_resolution_image = np.zeros((int(self._width//self.ratio),int(self._height//self.ratio),3))
 
         # We get the source and destiny folders:
         self.source = os.getenv('SOURCE_FOLDER_PATH')
@@ -76,7 +82,7 @@ class HighResolutionRecorder():
 
         if not self._trafficlight_period == None:
             self.semaforo = TrafficLight(periodoSemaforo = self._trafficlight_period,visualizacionDebug = False)
-        
+
         # IMPORTANT!
         # Resize above is redundant but black screen problem if removed.
         # This may cause a "Pata coja" effect
@@ -98,6 +104,10 @@ class HighResolutionRecorder():
     def my_period(self):
         return sum(self.my_periods)/len(self.my_periods)
 
+    def get_low_resolution_image(self):
+        self.low_resolution_image = cv2.resize(self.high_resolution_image,(self.high_resolution_image.shape[1]//self.ratio,self.high_resolution_image.shape[0]//self.ratio))
+        return self.low_resolution_image
+
     def process_new_image(self):
         """
         We acquire and process a new image:
@@ -114,16 +124,16 @@ class HighResolutionRecorder():
 
         if not self._simulation:
             image_object = self.frame_stream.__next__()
-            high_resolution_image = image_object.array
+            self.high_resolution_image = image_object.array
             # Truncate low res frame
             self._frame_output.truncate(0)
         else:
-            high_resolution_image = self.frame_stream.__next__()
-        
+            self.high_resolution_image = self.frame_stream.__next__()
+
         color_asinteger = 4
         # If required we get the pixels for the traffic light processing
         if not self._trafficlight_period == None:
-            pixeles = traffic_light_pixels(high_resolution_image, install_data['highResolution']['trafficLightPixels'])
+            pixeles = traffic_light_pixels(self.high_resolution_image, install_data['highResolution']['trafficLightPixels'])
             colourFound, flanco = self.semaforo.estadoSemaforo(pixeles)
             #semaforo_array = np.reshape(pixeles, (24, 8, 3))
             color_asinteger = colourFound%4
@@ -131,14 +141,13 @@ class HighResolutionRecorder():
         nombreDeArchivo = convertir_a_nombre_archivo(self._current_time)
 
         cv2.imwrite(self.destiny + '/' + nombreDeArchivo + '_{}.jpg'.format(color_asinteger),
-                    high_resolution_image)
+                    self.high_resolution_image)
 
         if self._trafficlight_period is not None:
             self.export_trafficlight_color(colourFound)
 
-        return high_resolution_image
-        
-            
+        return self.high_resolution_image
+
     def export_trafficlight_color(self, current_color):
         pass
 

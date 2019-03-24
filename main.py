@@ -6,6 +6,7 @@ import logging
 import argparse
 import datetime
 
+from tools.background import Background
 from highresolutionrecorder import HighResolutionRecorder
 
 parser = argparse.ArgumentParser(description = 'Settings configurations for the shutter class')
@@ -30,6 +31,9 @@ counter = 0
 period_to_display = 10
 
 if __name__ == "__main__":
+    # We create the background substraction module:
+    background = Background(scale=8, show = True, width = 2560, height = 1920)
+
     # By default we do not use simulation mode unless otherwise stated:
     simulation = False
 
@@ -50,15 +54,17 @@ if __name__ == "__main__":
                                         trafficlight = None)
 
     while True:
-        image = myRecorder.process_new_image()
+        full_size_image = myRecorder.process_new_image()
+        background.get_foreground(full_size_image)
         ch = cv2.waitKey(1)
         message = 'FPS: {0:.2f} and period: {1:.2f}'.format(myRecorder.my_fps(),myRecorder.my_period())
+
         if counter%period_to_display == 0:
             logging.info(message)
         else:
             logging.debug(message)
         if args.show:
-            cv2.imshow('Display', image)
+            cv2.imshow('Display', myRecorder.get_low_resolution_image())
         if ch == ord('q'):
             break
         counter += 1
