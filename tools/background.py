@@ -6,10 +6,10 @@ class Background():
         self.fgbgNew = cv2.createBackgroundSubtractorMOG2()
         self.show = show
         self.scaleFactor = scale
-        self.w_min = int(0.8*width//self.scaleFactor//2)
-        self.h_min = int(0.8*height//self.scaleFactor//2)
-        self.h_max = int(1.2*width//self.scaleFactor//2)
-        self.w_max = int(1.2*height//self.scaleFactor//2)
+        self.w_min = int(0.7*width//self.scaleFactor//2)
+        self.h_min = int(0.7*height//self.scaleFactor//2)
+        self.h_max = int(1.4*width//self.scaleFactor//2)
+        self.w_max = int(1.4*height//self.scaleFactor//2)
 
         self.optimal_step = 1
 
