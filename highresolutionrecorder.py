@@ -4,6 +4,7 @@ import os
 import cv2
 import sys
 import json
+import logging
 import numpy as np
 from time import time
 
@@ -37,6 +38,8 @@ class HighResolutionRecorder():
         self.apply_background = False,
         self.save_low_resolution = False,
         self._trafficlight_period = trafficlight
+        self._current_time = time()
+        self.my_periods = []
 
         # We get the source and destiny folders:
         self.source = os.getenv('SOURCE_FOLDER_PATH')
@@ -49,13 +52,13 @@ class HighResolutionRecorder():
         # We create the camera interface in simulation and normal mode
         if self._simulation:
             self.camera = PiCameraEmulator(self.source)
-            print('Started in Simulation mode')
+            logging.info('Started in Simulation mode')
         else:
             import picamera 
             from tools.picameraArray import PiRGBAArray
             self.camera = picamera.PiCamera(resolution = (self._width,self._height),
                                             framerate  = 2)
-            print('Started in PiCamera Mode')
+            logging.info('Started in PiCamera Mode')
         self.camera.exposure_mode = 'sports'
 
         # We create the canvas to receive the image object:
@@ -89,12 +92,25 @@ class HighResolutionRecorder():
         with open(os.getenv('INSTALL_PATH')+'/'+self.installFile) as jsonData:
             self.install_data = json.loads(jsonData.read())
 
+    def my_fps(self):
+        return 1/self.my_period()
+
+    def my_period(self):
+        return sum(self.my_periods)/len(self.my_periods)
 
     def process_new_image(self):
         """
         We acquire and process a new image:
         """
-        actual_datestamp_array = time()
+        # We set the new time, calculate the period and take care we don't overflow the memory
+        # by checking the lenght of the list is never greater than 15
+        new_current_time = time()
+        self.my_periods.append(new_current_time - self._current_time)
+        if len(self.my_periods) > 15:
+            self.my_periods.pop(0)
+        
+        # We start with the main process
+        self._current_time = new_current_time
 
         if not self._simulation:
             image_object = self.frame_stream.__next__()
@@ -112,7 +128,7 @@ class HighResolutionRecorder():
             #semaforo_array = np.reshape(pixeles, (24, 8, 3))
             color_asinteger = colourFound%4
 
-        nombreDeArchivo = convertir_a_nombre_archivo(actual_datestamp_array)
+        nombreDeArchivo = convertir_a_nombre_archivo(self._current_time)
 
         cv2.imwrite(self.destiny + '/' + nombreDeArchivo + '_{}.jpg'.format(color_asinteger),
                     high_resolution_image)
