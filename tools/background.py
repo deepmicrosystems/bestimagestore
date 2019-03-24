@@ -25,7 +25,8 @@ class Background():
         fgmask = self.fgbgNew.apply(self.imagenActual)
         
         #fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, self.kernel)
-        cv2.imshow('Mask', fgmask)
+        if self.show:
+            cv2.imshow('Mask', fgmask)
 
         _, contours, _ = cv2.findContours(fgmask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)  #,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 

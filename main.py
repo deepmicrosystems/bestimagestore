@@ -32,7 +32,7 @@ period_to_display = 10
 
 if __name__ == "__main__":
     # We create the background substraction module:
-    background = Background(scale=8, show = True, width = 2560, height = 1920)
+    background = Background(scale=8, show = args.show, width = 2560, height = 1920)
 
     # By default we do not use simulation mode unless otherwise stated:
     simulation = False
