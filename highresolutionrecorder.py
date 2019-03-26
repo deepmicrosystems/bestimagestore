@@ -8,7 +8,8 @@ import logging
 import numpy as np
 from time import time
 
-from tools.methods import traffic_light_pixels
+from tools.background import Background
+
 from tools.methods import convertir_a_nombre_archivo
 from tools.picamera_emulator import PiCameraEmulator
 
@@ -25,23 +26,28 @@ class HighResolutionRecorder():
                     height = 1920,
                     ratio = 8,
                     simulation = False,
-                    apply_roi = False,
                     apply_background = False,
-                    save_low_resolution = False,
-                    trafficlight = None,
-                    place = None):
+                    save_low_resolution = 0,
+                    show = False):
 
         # Setting the parameters as object variables:
         self._width  = width
         self._height = height
         self.ratio = ratio
         self._simulation = simulation 
-        self.apply_roi = False,
-        self.apply_background = False,
-        self.save_low_resolution = False,
-        self._trafficlight_period = trafficlight
+        self.apply_roi = False
+        self.apply_background = apply_background
+        self.save_low_resolution = save_low_resolution
         self._current_time = time()
         self.my_periods = []
+        # We create the background substraction module:
+        self.background = Background(scale=self.ratio, show = show, width = self._width, height = self._height)
+
+        # Timing features:
+        self._init_time = time()
+
+        # Labels
+        self.current_name = "Noname"
 
         # Canvas for the image:
         self.high_resolution_image = np.zeros((self._width,self._height,4))
@@ -80,9 +86,6 @@ class HighResolutionRecorder():
                                                                 splitter_port=2,
                                                                 resize=(self._width,self._height))
 
-        if not self._trafficlight_period == None:
-            self.semaforo = TrafficLight(periodoSemaforo = self._trafficlight_period,visualizacionDebug = False)
-
         # IMPORTANT!
         # Resize above is redundant but black screen problem if removed.
         # This may cause a "Pata coja" effect
@@ -90,13 +93,6 @@ class HighResolutionRecorder():
 
         self._trafficlight_pixels = np.zeros((192,8), dtype=int)
 
-        if place:
-            self.installFile = place + '.json'
-        else:
-            self.installFile = 'datos.json'
-
-        with open(os.getenv('INSTALL_PATH')+'/'+self.installFile) as jsonData:
-            self.install_data = json.loads(jsonData.read())
 
     def my_fps(self):
         return 1/self.my_period()
@@ -108,7 +104,7 @@ class HighResolutionRecorder():
         self.low_resolution_image = cv2.resize(self.high_resolution_image,(self.high_resolution_image.shape[1]//self.ratio,self.high_resolution_image.shape[0]//self.ratio))
         return self.low_resolution_image
 
-    def process_new_image(self):
+    def get_image(self):
         """
         We acquire and process a new image:
         """
@@ -116,6 +112,7 @@ class HighResolutionRecorder():
         # by checking the lenght of the list is never greater than 15
         new_current_time = time()
         self.my_periods.append(new_current_time - self._current_time)
+
         if len(self.my_periods) > 15:
             self.my_periods.pop(0)
         
@@ -130,26 +127,24 @@ class HighResolutionRecorder():
         else:
             self.high_resolution_image = self.frame_stream.__next__()
 
-        color_asinteger = 4
-        # If required we get the pixels for the traffic light processing
-        if not self._trafficlight_period == None:
-            pixeles = traffic_light_pixels(self.high_resolution_image, install_data['highResolution']['trafficLightPixels'])
-            colourFound, flanco = self.semaforo.estadoSemaforo(pixeles)
-            #semaforo_array = np.reshape(pixeles, (24, 8, 3))
-            color_asinteger = colourFound%4
-
-        nombreDeArchivo = convertir_a_nombre_archivo(self._current_time)
-
-        cv2.imwrite(self.destiny + '/' + nombreDeArchivo + '_{}.jpg'.format(color_asinteger),
-                    self.high_resolution_image)
-
-        if self._trafficlight_period is not None:
-            self.export_trafficlight_color(colourFound)
-
+        self.current_name = convertir_a_nombre_archivo(self._current_time)
         return self.high_resolution_image
 
-    def export_trafficlight_color(self, current_color):
-        pass
+    def save_images(self, state):
+        base_name = self.destiny + '/' + self.current_name + '_s{}'.format(state)
+
+        # Background
+        if self.apply_background:
+            rectangles = self.background.get_foreground(self.high_resolution_image)
+            print('Saving {} rectangles'.format(len(rectangles)))
+            for index,rectangle in enumerate(rectangles):
+                (x,y,w,h) = rectangle
+                high_resolution_name = base_name + '_{}_high.jpg'.format(index)
+                cv2.imwrite(high_resolution_name, self.high_resolution_image[y:y+h,x:x+w])
+
+        if time() - self._init_time < self.save_low_resolution:
+            low_resolution_name = base_name + '_low.jpg'
+            cv2.imwrite(low_resolution_name, self.get_low_resolution_image())
 
     # Setters and getters:
     def set_simulation(self,new_simulation_state):
