@@ -7,6 +7,7 @@ import json
 import logging
 import numpy as np
 from time import time
+from datetime import datetime
 
 from tools.background import Background
 
@@ -55,7 +56,12 @@ class HighResolutionRecorder():
 
         # We get the source and destiny folders:
         self.source = os.getenv('SOURCE_FOLDER_PATH')
-        self.destiny = os.getenv('DESTINY_HIGH_RESOLUTION_PATH')
+        self.todayFolder = os.getenv('DESTINY_HIGH_RESOLUTION_PATH') + '/' + datetime.now().strftime('%Y%m%d')
+        self.destiny =  self.todayFolder + '/movementSensor'
+
+        if not os.path.exists(self.todayFolder):
+            os.system('mkdir ' + self.todayFolder)
+            os.system('mkdir ' + self.destiny)
 
         # We verify the destiny folder is empty:
         os.system('sudo rm -rf ' + self.destiny)
@@ -92,7 +98,6 @@ class HighResolutionRecorder():
         # To be improved with v1 camera
 
         self._trafficlight_pixels = np.zeros((192,8), dtype=int)
-
 
     def my_fps(self):
         return 1/self.my_period()

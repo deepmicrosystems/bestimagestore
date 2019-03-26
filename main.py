@@ -65,7 +65,7 @@ if __name__ == "__main__":
         install_data = json.loads(jsonData.read())
 
     if not args.trafficlight == None:
-        trafficlight = TrafficLight(periodoSemaforo = args.trafficlight,visualizacionDebug = args.show)
+        trafficlight = TrafficLight(periodoSemaforo = args.trafficlight,visualizacionDebug = args.show, export_value = True)
 
     # LOOP
     while True:
@@ -77,10 +77,7 @@ if __name__ == "__main__":
 
         if not args.trafficlight == None:
             pixeles = traffic_light_pixels(full_size_image, pixels)
-            pixeles_ord = np.reshape(pixeles,(24,8,3))
-            cv2.imshow('TL',pixeles_ord)
             colourFound, flanco = trafficlight.estadoSemaforo(pixeles)
-            #trafficlight_array = np.reshape(pixeles, (24, 8, 3))
             color_asinteger = colourFound%4
             logging.info('Colour found to be {}'.format(color_asinteger))
 
