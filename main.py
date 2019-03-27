@@ -38,6 +38,7 @@ if __name__ == "__main__":
     # To display de fps we make use of:
     counter = 0
     period_to_logging = 10
+    color_asinteger = 0
 
     # By default we do not use simulation mode unless otherwise stated:
     simulation = False
