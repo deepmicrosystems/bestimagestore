@@ -22,3 +22,11 @@ def traffic_light_pixels(image, index):
     #imagen = pixels.reshape(128, 2, 3)
     #new_imagen = cv2.resize(imagen, (24, 8), interpolation=cv2.INTER_CUBIC)
     return pixels
+
+def is_connected_to_internet():
+    try:
+        socket.create_connection(("www.google.com", 80))
+        return True
+    except OSError:
+        pass
+    return False

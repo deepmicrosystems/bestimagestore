@@ -56,16 +56,16 @@ class HighResolutionRecorder():
 
         # We get the source and destiny folders:
         self.source = os.getenv('SOURCE_FOLDER_PATH')
-        self.todayFolder = os.getenv('DESTINY_HIGH_RESOLUTION_PATH') + '/' + datetime.now().strftime('%Y%m%d')
-        self.destiny =  self.todayFolder + '/movementSensor'
+        self.todayFolder = os.getenv('TODAY_FOLDER')
+        self.movement_path =  os.getenv('MOVEMENT_PATH')
 
         if not os.path.exists(self.todayFolder):
             os.system('mkdir ' + self.todayFolder)
-            os.system('mkdir ' + self.destiny)
+            os.system('mkdir ' + self.movement_path)
 
         # We verify the destiny folder is empty:
-        os.system('sudo rm -rf ' + self.destiny)
-        os.system('mkdir ' + self.destiny)
+        os.system('sudo rm -rf ' + self.movement_path)
+        os.system('mkdir ' + self.movement_path)
 
         # We create the camera interface in simulation and normal mode
         if self._simulation:
@@ -136,7 +136,7 @@ class HighResolutionRecorder():
         return self.high_resolution_image
 
     def save_images(self, state):
-        base_name = self.destiny + '/' + self.current_name + '_s{}'.format(state)
+        base_name = self.movement_path + '/' + self.current_name + '_s{}'.format(state)
 
         # Background
         if self.apply_background:
