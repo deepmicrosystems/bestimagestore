@@ -22,8 +22,8 @@ parser.add_argument('-H', '--heigth',       type = int,  default = '1920', help 
 parser.add_argument('-s', '--show',         type = bool, default = False,  help = 'Show frames in real time')
 parser.add_argument('-i', '--input',        type = str,  default = None,   help = 'File or folder to display in emulated mode')
 parser.add_argument('-d', '--debug',        type = bool, default = False,  help = 'Starts in debug mode')
-parser.add_argument('-t', '--trafficlight', type = int,  default = None,   help = 'Export Traffic Light Information with the given period, if not stated the trafficlight unit wont init')
-parser.add_argument('-p', '--period',       type = int,  default = 0,      help = 'Period of seconds for saving low resolution images')
+parser.add_argument('-p', '--trafficlight', type = int,  default = None,   help = 'Export Traffic Light Information with the given period, if not stated the trafficlight unit wont init')
+parser.add_argument('-l', '--low_saving',   type = int,  default = 0,      help = 'Period of seconds for saving low resolution images')
 parser.add_argument('-b', '--back',         type = bool, default = False,  help = 'Enable Background saving')
 #parser.add_argument('-s', '--save',   type = bool, default = False,  help = 'Save all low resolution frames')
 args = parser.parse_args()
@@ -55,7 +55,7 @@ if __name__ == "__main__":
                                         height = 1920,
                                         simulation = simulation,          # False
                                         apply_background = args.back,
-                                        save_low_resolution = args.period,
+                                        save_low_resolution = args.low_saving,
                                         show = args.show)
 
     # Setup the trafficlight:

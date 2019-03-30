@@ -10,7 +10,7 @@ from time import time
 from datetime import datetime
 
 from tools.background import Background
-
+from tools.databasehandler import DataBaseHandler
 from tools.methods import convertir_a_nombre_archivo
 from tools.picamera_emulator import PiCameraEmulator
 
@@ -30,6 +30,10 @@ class HighResolutionRecorder():
                     apply_background = False,
                     save_low_resolution = 0,
                     show = False):
+
+        # We create the database:
+        self.my_database = DataBaseHandler(os.getenv('TODAY_FOLDER')+'/movement_sensor.db')
+        logging.debug('Database created successfully')
 
         # Setting the parameters as object variables:
         self._width  = width
@@ -57,7 +61,7 @@ class HighResolutionRecorder():
         # We get the source and destiny folders:
         self.source = os.getenv('SOURCE_FOLDER_PATH')
         self.todayFolder = os.getenv('TODAY_FOLDER')
-        self.movement_path =  os.getenv('MOVEMENT_PATH')
+        self.movement_path = os.getenv('MOVEMENT_PATH')
 
         if not os.path.exists(self.todayFolder):
             os.system('mkdir ' + self.todayFolder)
@@ -133,19 +137,22 @@ class HighResolutionRecorder():
             self.high_resolution_image = self.frame_stream.__next__()
 
         self.current_name = convertir_a_nombre_archivo(self._current_time)
+        logging.debug(self._current_time)
+        logging.debug(self.current_name)
         return self.high_resolution_image
 
     def save_images(self, state):
         base_name = self.movement_path + '/' + self.current_name + '_s{}'.format(state)
-
         # Background
         if self.apply_background:
             rectangles = self.background.get_foreground(self.high_resolution_image)
-            print('Saving {} rectangles'.format(len(rectangles)))
+            logging.debug('Saving {} rectangles'.format(len(rectangles)))
             for index,rectangle in enumerate(rectangles):
                 (x,y,w,h) = rectangle
                 high_resolution_name = base_name + '_{}_high.jpg'.format(index)
                 cv2.imwrite(high_resolution_name, self.high_resolution_image[y:y+h,x:x+w])
+                # We report to the database:
+                self.my_database.insert_new_element(self._current_time,state,index,x,y,w,h)
 
         if time() - self._init_time < self.save_low_resolution:
             low_resolution_name = base_name + '_low.jpg'
@@ -154,5 +161,8 @@ class HighResolutionRecorder():
     # Setters and getters:
     def set_simulation(self,new_simulation_state):
         self._simulation = new_simulation_state
+
+    def __del__(self):
+        self.my_database.close_database()
 
 
