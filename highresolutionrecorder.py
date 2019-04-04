@@ -41,7 +41,6 @@ class HighResolutionRecorder():
         self.ratio = ratio
         self._emulate = emulate 
         self.apply_roi = False
-        self.apply_background = apply_background
         self.save_low_resolution = save_low_resolution
         self._current_time = time()
         self.my_periods = []
@@ -90,25 +89,16 @@ class HighResolutionRecorder():
         self._best_region = best_region
 
     def obtain_coincidence(self,rectangle1):
-        # This method assumes that the rectangle points are given from the least to the further from the origin:
-        logging.debug(rectangle1)
-        logging.debug(self._best_region)
-        x_min, y_min = rectangle1[0]
-        x_max, y_max = rectangle1[1]
+        # The next three lines calculate the overlap area between the two rectangles:
         best_x_min, best_y_min = self._best_region[0]
         best_x_max, best_y_max = self._best_region[1]
-        # We get the maximum minimum points, that is, the closest points together to calculate the intersecting area
-        max_min_x = min(x_min,best_x_min)
-        min_max_x = min(x_max,best_x_max)
-        max_min_y = min(y_min,best_y_min)
-        min_max_y = min(y_max,best_y_max)
-        logging.debug('Intersecting rectangle: [({},{}),({},{})]'.format(max_min_x, max_min_y, min_max_x, min_max_y))
-        # We make use of the area of the best rectangle as reference for the fraction, note, this can be negative.
-        intersecting_rectangle_area = (min_max_x - max_min_x) * (min_max_y - max_min_y)
-        logging.debug('Area: {}'.format(intersecting_rectangle_area))
+        x_overlap = max(0, min(rectangle1[1][0], self._best_region[1][0]) - max(rectangle1[0][0], self._best_region[0][0]))
+        y_overlap = max(0, min(rectangle1[1][1], self._best_region[1][1]) - max(rectangle1[0][1], self._best_region[0][1]))
+        overlapArea = x_overlap * y_overlap
         reference_area = (best_x_max - best_x_min) * (best_y_max - best_y_min)
-        logging.debug('Reference: {}'.format(reference_area))
-        return int(intersecting_rectangle_area/reference_area*100)
+        coincidence = int(overlapArea/reference_area*100)
+        logging.debug('Overlap area: {}/ Reference: {} = {}'.format(overlapArea,reference_area,coincidence))
+        return coincidence
 
     def my_fps(self):
         return 1/self.my_period()
@@ -141,7 +131,7 @@ class HighResolutionRecorder():
         logging.debug(self.current_name)
         return self.high_resolution_image
 
-    def save_images(self, state, exclude_range = 30):
+    def save_images(self, state, exclude_range = 50):
         base_name = self.movement_path + '/' + self.current_name + '_s{}'.format(state)
         # If we must report some soconds of Foreground in high resolution:
         if self.maximum_seconds_in_disk:
@@ -164,8 +154,6 @@ class HighResolutionRecorder():
         if time() - self._init_time < self.save_low_resolution:
             low_resolution_name = base_name + '_low.jpg'
             cv2.imwrite(low_resolution_name, self.get_low_resolution_image())
-
-
 
     # Setters and getters:
     def set_emulate(self,new_emulate_state):

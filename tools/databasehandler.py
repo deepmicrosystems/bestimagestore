@@ -118,7 +118,7 @@ class DataBaseHandler():
 
         iso_format_date = convert_to_db_datetime(seconds_epoch)
         sql = "SELECT * FROM objects WHERE timestamp {} '{}' AND exist = 1".format(compare_symbol,iso_format_date)
-        print('THIS:',sql)
+        #print('THIS:',sql)
         cur = self.connection.cursor()
         cur.execute(sql)
         items = cur.fetchall()

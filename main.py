@@ -4,6 +4,7 @@ import os
 import sys
 import cv2
 import json
+import time
 import logging
 import argparse
 import datetime
@@ -24,8 +25,9 @@ parser.add_argument('-e', '--emulate',      type = str,  default = None,   help 
 parser.add_argument('-d', '--debug',        type = bool, default = False,  help = 'Starts in debug mode')
 parser.add_argument('-p', '--trafficlight', type = int,  default = None,   help = 'Export Traffic Light Information with the given period, if not stated the trafficlight unit wont init')
 parser.add_argument('-l', '--low_saving',   type = int,  default = 0,      help = 'Period of seconds for saving low resolution images')
-parser.add_argument('-b', '--back',         type = int,  default = 3600,   help = 'Enable Background saving, with b second images in the past')
-parser.add_argument('-c', '--coincidence',  type = int,  default = 20,     help = 'Required coincidence to store moving objects')
+parser.add_argument('-k', '--autokill',     type = int,  default = 0,      help = 'Self kill program after given seconds')
+parser.add_argument('-b', '--back',         type = int,  default = 600,    help = 'Enable Background saving, with b second images in the past')
+parser.add_argument('-c', '--coincidence',  type = int,  default = 40,     help = 'Required coincidence to store moving objects')
 #parser.add_argument('-s', '--save',   type = bool, default = False,  help = 'Save all low resolution frames')
 args = parser.parse_args()
 
@@ -64,13 +66,15 @@ if __name__ == "__main__":
     if not args.trafficlight == None:
         trafficlight = TrafficLight(periodoSemaforo = args.trafficlight,visualizacionDebug = args.show, export_value = True)
 
+    tiempoInicio =time.time()
+
     # LOOP
     while True:
         full_size_image = myRecorder.get_image()
 
         # Traffic light:
         # Notese esta corrección de división por dos:
-        pixels = np.array(install_data['highResolution']['trafficLightPixels'])//2
+        pixels = np.array(install_data['highResolution']['trafficLightPixels'])
 
         if not args.trafficlight == None:
             pixeles = traffic_light_pixels(full_size_image, pixels)
@@ -95,3 +99,6 @@ if __name__ == "__main__":
         if ch == ord('q'):
             break
         counter += 1
+        if ((time.time()-tiempoInicio)>args.autokill) &(args.autokill!=0):
+            logging.info('Abandono programado del programa')
+            break
