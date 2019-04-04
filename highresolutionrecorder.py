@@ -58,7 +58,6 @@ class HighResolutionRecorder():
 
         # Canvas for the image:
         self.high_resolution_image = np.zeros((self._width,self._height,4))
-        self.low_resolution_image = np.zeros((int(self._width//self.ratio),int(self._height//self.ratio),3))
 
         # We get the source and destiny folders:
         self.source = os.getenv('SOURCE_FOLDER_PATH')
@@ -119,8 +118,7 @@ class HighResolutionRecorder():
         return sum(self.my_periods)/len(self.my_periods)
 
     def get_low_resolution_image(self):
-        self.low_resolution_image = cv2.resize(self.high_resolution_image,(self.high_resolution_image.shape[1]//self.ratio,self.high_resolution_image.shape[0]//self.ratio))
-        return self.low_resolution_image
+        return self.background.get_low_resolution_image()
 
     def get_image(self):
         """

@@ -3,30 +3,37 @@ import numpy as np
 
 class Background():
     def __init__(self,scale = 1,show = False, width = 2560, height = 1920):
-        self.fgbgNew = cv2.createBackgroundSubtractorMOG2()
-        self.show = show
+        # Storing variables
         self.scaleFactor = scale
+        self.show = show
+        self._width = width
+        self._height = height
+
+        #Auxiliar parameters
+        self.fgbgNew = cv2.createBackgroundSubtractorMOG2()
+
         self.w_min = int(0.7*width//self.scaleFactor//2)
-        self.h_min = int(0.7*height//self.scaleFactor//2)
+        self.h_min = int(0.7*self._height//self.scaleFactor//2)
         self.h_max = int(1.4*width//self.scaleFactor//2)
-        self.w_max = int(1.4*height//self.scaleFactor//2)
+        self.w_max = int(1.4*self._height//self.scaleFactor//2)
 
         self.optimal_step = 1
 
-        self.imagenActual = np.zeros((width//self.scaleFactor,height//self.scaleFactor,3))
+        self.imagenActual = np.zeros((width//self.scaleFactor,self._height//self.scaleFactor,3))
+        self.low_resolution_image = np.zeros((int(self._width//self.scaleFactor),int(self._height//self.scaleFactor),3))
 
     def get_foreground(self,imagenActual):
         #self.imagenActual = cv2.cvtColor(imagenActual,cv2.COLOR_BGR2GRAY)
-        self.imagenActual = cv2.resize(imagenActual,(imagenActual.shape[1]//self.scaleFactor,imagenActual.shape[0]//self.scaleFactor))
+        self.low_resolution_image = cv2.resize(imagenActual,(imagenActual.shape[1]//self.scaleFactor,imagenActual.shape[0]//self.scaleFactor))
         
-        self.imagenActual = cv2.GaussianBlur(self.imagenActual,(17,17),0)
+        self.imagenActual = cv2.GaussianBlur(self.low_resolution_image,(17,17),0)
         #self.imagenActualBS = cv2.medianBlur(self.imagenActualBS,11,0)
         #self.imagenActualBS = cv2.morphologyEx(self.imagenActualBS, cv2.MORPH_OPEN, self.kernel)
         fgmask = self.fgbgNew.apply(self.imagenActual)
         
         #fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, self.kernel)
-        if self.show:
-            cv2.imshow('Mask', fgmask)
+        #if self.show:
+        #    cv2.imshow('Mask', fgmask)
 
         _, contours, _ = cv2.findContours(fgmask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)  #,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -38,12 +45,11 @@ class Background():
             if ((h > self.h_min) or (w > self.w_min)) and ((h < self.h_max) or (w < self.w_max)):
                 rectangles.append((self.scaleFactor*x, self.scaleFactor*y, self.scaleFactor*w, self.scaleFactor*h))
                 if self.show:
-                    drawn_image = cv2.rectangle(self.imagenActual, (x,y), (x+w,y+h), (255,255,255), 2, -1)
-                    cv2.imshow('Background', drawn_image)
-
-                
-
+                    self.low_resolution_image = cv2.rectangle(self.low_resolution_image, (x,y), (x+w,y+h), (255,255,255), 2, -1)
         return rectangles
+
+    def get_low_resolution_image(self):
+        return self.low_resolution_image
 
     def get_foreground_contrib(self,imagenActualEnGris,area):
         self.imagenActualBS = area.enmarcar(imagenActualEnGris)
