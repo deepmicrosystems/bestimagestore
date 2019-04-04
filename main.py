@@ -24,8 +24,8 @@ parser.add_argument('-e', '--emulate',      type = str,  default = None,   help 
 parser.add_argument('-d', '--debug',        type = bool, default = False,  help = 'Starts in debug mode')
 parser.add_argument('-p', '--trafficlight', type = int,  default = None,   help = 'Export Traffic Light Information with the given period, if not stated the trafficlight unit wont init')
 parser.add_argument('-l', '--low_saving',   type = int,  default = 0,      help = 'Period of seconds for saving low resolution images')
-parser.add_argument('-c', '--coincidence',  type = int,  default = 20,      help = 'Required coincidence to store moving objects')
-parser.add_argument('-b', '--back',         type = bool, default = False,  help = 'Enable Background saving')
+parser.add_argument('-b', '--back',         type = int,  default = 3600,   help = 'Enable Background saving, with b second images in the past')
+parser.add_argument('-c', '--coincidence',  type = int,  default = 20,     help = 'Required coincidence to store moving objects')
 #parser.add_argument('-s', '--save',   type = bool, default = False,  help = 'Save all low resolution frames')
 args = parser.parse_args()
 
@@ -47,9 +47,9 @@ if __name__ == "__main__":
     myRecorder = HighResolutionRecorder(width = 2560,
                                         height = 1920,
                                         emulate = emulate,          # False
-                                        apply_background = args.back,
                                         save_low_resolution = args.low_saving,
-                                        show = args.show)
+                                        show = args.show,
+                                        maximum_seconds_in_disk = args.back)
 
     # Setup the trafficlight:
 

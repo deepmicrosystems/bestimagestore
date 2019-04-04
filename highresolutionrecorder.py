@@ -30,10 +30,9 @@ class HighResolutionRecorder():
                     height = 1920,
                     ratio = 8,
                     emulate = False,
-                    apply_background = False,
                     save_low_resolution = 0,
                     show = False,
-                    maximum_seconds_in_disk = 5):
+                    maximum_seconds_in_disk = 10):
 
         # Setting the parameters as object variables:
         self._width  = width
@@ -144,8 +143,8 @@ class HighResolutionRecorder():
 
     def save_images(self, state, exclude_range = 30):
         base_name = self.movement_path + '/' + self.current_name + '_s{}'.format(state)
-        # Background
-        if self.apply_background:
+        # If we must report some soconds of Foreground in high resolution:
+        if self.maximum_seconds_in_disk:
             rectangles = self.background.get_foreground(self.high_resolution_image)
             logging.debug('Saving {} rectangles'.format(len(rectangles)))
             for index,rectangle in enumerate(rectangles):
@@ -158,12 +157,15 @@ class HighResolutionRecorder():
                     # We report to the database:
                     self.my_database.insert_new_element(self._current_time,state,index,x,y,w,h)
 
+            # We verify the maximum time in the past that we store:
+            self.my_database.purge_images_before(time() - self.maximum_seconds_in_disk)
+
+        # If we must store the first seconds in high resolution:
         if time() - self._init_time < self.save_low_resolution:
             low_resolution_name = base_name + '_low.jpg'
             cv2.imwrite(low_resolution_name, self.get_low_resolution_image())
 
-        # We verify the maximum time in the past that we store:
-        self.my_database.purge_images_before(time() - self.maximum_seconds_in_disk)
+
 
     # Setters and getters:
     def set_emulate(self,new_emulate_state):
