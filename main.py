@@ -36,7 +36,7 @@ if __name__ == "__main__":
     my_level = logging.INFO
     if args.debug:
         my_level = logging.DEBUG
-    logging.basicConfig(filename='bestimagestore.txt', filemode='w', format='%(name)s - %(asctime)s : %(message)s',level=my_level)
+    logging.basicConfig(filename=os.getenv('TODAY_FOLDER')+'/bestimagestore.txt', filemode='w', format='%(name)s: %(levelname)s - %(asctime)s : %(message)s', level=my_level)
 
     # To display de fps we make use of:
     counter = 0
