@@ -49,8 +49,8 @@ def convertir_de_iso8601_a_segundos(string_name,timezone = -4):
     The String name must be in the form YYYY-mm-dd HH:MM:SS.ff
     ff are the centiseconds
     """
-    print('Before: ',string_name)
-    print("Here: ",int(string_name[9:11]),timezone)
+    #print('Before: ',string_name)
+    #print("Here: ",int(string_name[9:11]),timezone)
     
     string_to_time = datetime.datetime(int(string_name[0:4]),       # YYYY
                                     int(string_name[5:7]),          # mm

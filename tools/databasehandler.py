@@ -39,7 +39,7 @@ class DataBaseHandler():
         if os.path.exists(path_to_data_base):
             db_exists = True
 
-        print('Path: ',path_to_data_base)
+        logging.info('Path: ',path_to_data_base)
 
         # We try to connect, this database asumes the folder paths are already created
         try:
@@ -59,7 +59,6 @@ class DataBaseHandler():
         logging.debug(sql)
         cur = self.connection.cursor()
         variables = (convert_to_db_datetime(current_time_seconds), state, number, 1, x, y, w, h)
-        print(sql,variables)
         cur.execute(sql,variables)
         self.connection.commit()
         logging.debug('LAST WORD ID: '+str(cur.lastrowid))
@@ -118,7 +117,6 @@ class DataBaseHandler():
 
         iso_format_date = convert_to_db_datetime(seconds_epoch)
         sql = "SELECT * FROM objects WHERE timestamp {} '{}' AND exist = 1".format(compare_symbol,iso_format_date)
-        #print('THIS:',sql)
         cur = self.connection.cursor()
         cur.execute(sql)
         items = cur.fetchall()
