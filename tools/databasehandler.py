@@ -39,7 +39,7 @@ class DataBaseHandler():
         if os.path.exists(path_to_data_base):
             db_exists = True
 
-        logging.info('Path: ',path_to_data_base)
+        logging.info('Path: {}'.format(path_to_data_base))
 
         # We try to connect, this database asumes the folder paths are already created
         try:

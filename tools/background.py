@@ -12,8 +12,8 @@ class Background():
         #Auxiliar parameters
         self.fgbgNew = cv2.createBackgroundSubtractorMOG2()
 
-        self.w_min = int(0.7*width//self.scaleFactor//2)
-        self.h_min = int(0.7*self._height//self.scaleFactor//2)
+        self.w_min = int(0.6*width//self.scaleFactor//2)
+        self.h_min = int(0.6*self._height//self.scaleFactor//2)
         self.h_max = int(1.4*width//self.scaleFactor//2)
         self.w_max = int(1.4*self._height//self.scaleFactor//2)
 

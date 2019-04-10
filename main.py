@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(description = 'Settings configurations for the 
 parser.add_argument('-W', '--width',        type = int,  default = '2560', help = 'Widht of the picture')
 parser.add_argument('-H', '--heigth',       type = int,  default = '1920', help = 'Heigth of the picture in pixels')
 #parser.add_argument('-r', '--roi',          type = bool, default = False,  help = 'Enable ROI')
-parser.add_argument('-s', '--show',         type = str, default = False,  help = 'Show frames in real time')
+parser.add_argument('-s', '--show',         type = str,  default = False,  help = 'Show frames in real time')
 parser.add_argument('-e', '--emulate',      type = str,  default = None,   help = 'File or folder to display in emulated mode')
 parser.add_argument('-d', '--debug',        type = bool, default = False,  help = 'Starts in debug mode')
 parser.add_argument('-p', '--trafficlight', type = int,  default = None,   help = 'Export Traffic Light Information with the given period, if not stated the trafficlight unit wont init')
